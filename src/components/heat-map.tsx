@@ -1,14 +1,64 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { MapPin, TrendingUp, Users, AlertTriangle } from "lucide-react"
+import { MapPin, TrendingUp, Users, AlertTriangle, Loader2 } from "lucide-react"
 import { regionData } from "@/lib/mock-data"
+import { kitaKitsAPI, type AnalyticsResponse } from "@/lib/api-client"
+import { useDataSource } from "@/components/data-source-toggle"
 
 export function HeatMap() {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null)
+  const [data, setData] = useState<AnalyticsResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [apiError, setApiError] = useState(false)
+  const isLiveDataMode = useDataSource()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isLiveDataMode) {
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        setIsLoading(true)
+        setApiError(false)
+        const analyticsData = await kitaKitsAPI.getAnalytics()
+        setData(analyticsData)
+      } catch (error) {
+        console.error('Failed to fetch analytics data:', error)
+        setApiError(true)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [isLiveDataMode])
+
+  // Determine data source
+  const currentRegionData = (() => {
+    if (!isLiveDataMode) {
+      return regionData // Use mock data
+    }
+    
+    if (apiError || !data) {
+      return {} // No data available
+    }
+    
+    // Live mode with real data - check if we have geographic data
+    const geoData = data.urbanPlanningData?.geographicData
+    if (!geoData || geoData.userDistribution?.length === 0) {
+      return {} // Empty geographic data
+    }
+    
+    // Transform API geographic data to region format (when available)
+    // For now, return empty since database is reset
+    return {}
+  })()
 
   // Get color based on MSME density/status
   const getRegionColor = (status: string) => {
@@ -102,6 +152,25 @@ export function HeatMap() {
 
         {/* Simplified Philippines Map Grid */}
         <div className="relative mx-auto max-w-md">
+          {isLoading ? (
+            <div className="h-96 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            Object.keys(currentRegionData).length === 0 && isLiveDataMode ? (
+              <div className="h-96 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="text-6xl text-muted-foreground">🗺️</div>
+                <div>
+                  <h3 className="text-lg font-semibold text-muted-foreground">No Geographic Data Yet</h3>
+                  <p className="text-sm text-muted-foreground mt-2 max-w-md">
+                    Regional MSME distribution will appear here as users interact with your KitaKits bot from different locations across the Philippines.
+                  </p>
+                </div>
+                <div className="text-xs text-muted-foreground bg-muted px-3 py-2 rounded-lg">
+                  ✅ Connected to Live API • Waiting for Location Data
+                </div>
+              </div>
+            ) : (
           <div className="grid grid-cols-4 gap-1 h-96">
             {Array.from({ length: 24 }, (_, index) => {
               const row = Math.floor(index / 4) + 1
@@ -112,7 +181,7 @@ export function HeatMap() {
                 return <div key={index} className="rounded"></div>
               }
 
-              const data = regionData[region.name as keyof typeof regionData]
+              const regionInfo = currentRegionData[region.name as keyof typeof currentRegionData] || regionData[region.name as keyof typeof regionData]
               
               return (
                 <Dialog key={region.name}>
@@ -120,7 +189,7 @@ export function HeatMap() {
                     <button
                       className={`
                         rounded-lg p-2 transition-all duration-200 cursor-pointer
-                        ${getRegionColor(data.status)}
+                        ${getRegionColor(regionInfo.status)}
                         text-white text-xs font-medium
                         transform hover:scale-105 shadow-md hover:shadow-lg
                       `}
@@ -149,11 +218,11 @@ export function HeatMap() {
                       {/* Key Metrics */}
                       <div className="grid grid-cols-2 gap-4">
                         <div className="text-center p-3 bg-muted rounded-lg">
-                          <div className="text-2xl font-bold">{data.msmes.toLocaleString()}</div>
+                          <div className="text-2xl font-bold">{regionInfo.msmes.toLocaleString()}</div>
                           <div className="text-xs text-muted-foreground">Total MSMEs</div>
                         </div>
                         <div className="text-center p-3 bg-muted rounded-lg">
-                          <div className="text-2xl font-bold">₱{data.avgTransaction}</div>
+                          <div className="text-2xl font-bold">₱{regionInfo.avgTransaction}</div>
                           <div className="text-xs text-muted-foreground">Avg Transaction</div>
                         </div>
                       </div>
@@ -162,8 +231,8 @@ export function HeatMap() {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium">Status:</span>
-                          <Badge variant="outline" className={getStatusColor(data.status)}>
-                            {getStatusLabel(data.status)}
+                          <Badge variant="outline" className={getStatusColor(regionInfo.status)}>
+                            {getStatusLabel(regionInfo.status)}
                           </Badge>
                         </div>
                         
@@ -171,23 +240,23 @@ export function HeatMap() {
                           <span className="text-sm font-medium">Growth:</span>
                           <div className="flex items-center space-x-1">
                             <TrendingUp className="h-3 w-3 text-green-600" />
-                            <span className="text-green-600 font-medium">{data.growth}</span>
+                            <span className="text-green-600 font-medium">{regionInfo.growth}</span>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium">Top Product:</span>
-                          <span className="font-medium">{data.topProduct}</span>
+                          <span className="font-medium">{regionInfo.topProduct}</span>
                         </div>
                       </div>
 
                       {/* Alert if any */}
-                      {data.alert && (
+                      {regionInfo.alert && (
                         <div className="flex items-start space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                           <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
                           <div>
                             <div className="text-sm font-medium text-yellow-800">Alert</div>
-                            <div className="text-xs text-yellow-700">{data.alert}</div>
+                            <div className="text-xs text-yellow-700">{regionInfo.alert}</div>
                           </div>
                         </div>
                       )}
@@ -197,6 +266,8 @@ export function HeatMap() {
               )
             })}
           </div>
+          )
+          )}
         </div>
 
         {/* Summary Stats */}

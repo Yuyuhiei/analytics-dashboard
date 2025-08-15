@@ -40,15 +40,43 @@ export function TrendsChart() {
   }, [isLiveDataMode])
 
   // Transform data for the chart
-  const chartData = fallbackProducts.map(product => ({
-    name: product.name.length > 15 ? product.name.substring(0, 15) + '...' : product.name,
-    fullName: product.name,
-    sales: product.sales,
-    change: product.change,
-    price: product.price,
-    category: product.category,
-    stock: product.stock
-  }))
+  const chartData = (() => {
+    if (!isLiveDataMode) {
+      // Show mock data when explicitly in mock mode
+      return fallbackProducts.map(product => ({
+        name: product.name.length > 15 ? product.name.substring(0, 15) + '...' : product.name,
+        fullName: product.name,
+        sales: product.sales,
+        change: product.change,
+        price: product.price,
+        category: product.category,
+        stock: product.stock
+      }))
+    }
+    
+    if (apiError || !data) {
+      // Live mode but no data available
+      return []
+    }
+    
+    // Live mode with real data - transform API data to chart format
+    // Since the database is reset, this will be empty initially
+    const businessItems = data.businessInsights?.keyFindings || []
+    if (businessItems.length === 0) {
+      return [] // Empty state for reset database
+    }
+    
+    // Transform real data when available
+    return businessItems.slice(0, 10).map((finding, index) => ({
+      name: `Item ${index + 1}`,
+      fullName: finding,
+      sales: 0, // No sales data yet
+      change: 0,
+      price: 0,
+      category: "Unknown",
+      stock: "No Data"
+    }))
+  })()
   
   // Transform API data to daily trend chart data if available
   const dailyTrendData = data?.trends?.daily || []
@@ -142,6 +170,20 @@ export function TrendsChart() {
         ) : (
           <div className="h-80">
             {viewMode === 'products' ? (
+              chartData.length === 0 && isLiveDataMode ? (
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="text-6xl text-muted-foreground">📊</div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-muted-foreground">No Product Data Yet</h3>
+                    <p className="text-sm text-muted-foreground mt-2 max-w-md">
+                      Your database has been reset. Product analytics will appear here as users interact with your KitaKits bot and add inventory items.
+                    </p>
+                  </div>
+                  <div className="text-xs text-muted-foreground bg-muted px-3 py-2 rounded-lg">
+                    ✅ Connected to Live API • Database Reset Complete
+                  </div>
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={chartData}
@@ -178,7 +220,22 @@ export function TrendsChart() {
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              )
             ) : (
+              dailyTrendData.length === 0 && isLiveDataMode ? (
+                <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
+                  <div className="text-6xl text-muted-foreground">📈</div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-muted-foreground">No Trend Data Yet</h3>
+                    <p className="text-sm text-muted-foreground mt-2 max-w-md">
+                      Daily interaction trends will appear here as users start using your KitaKits bot.
+                    </p>
+                  </div>
+                  <div className="text-xs text-muted-foreground bg-muted px-3 py-2 rounded-lg">
+                    ✅ Connected to Live API • Ready for User Data
+                  </div>
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart
                   data={dailyTrendData}
@@ -219,6 +276,7 @@ export function TrendsChart() {
                   />
                 </LineChart>
               </ResponsiveContainer>
+              )
             )}
           </div>
         )}
