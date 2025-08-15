@@ -17,7 +17,7 @@ export default function Dashboard() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">KitaKits Analytics</h1>
               <p className="text-muted-foreground">
-                Real-time insights from 45,000+ MSMEs across the Philippines
+                Real-time insights from MSMEs across the Philippines
               </p>
             </div>
             <div className="flex items-center space-x-4">

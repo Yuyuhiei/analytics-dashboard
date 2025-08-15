@@ -78,7 +78,7 @@ export function AlertCards() {
         impact: index < 2 ? 'High' : 'Medium',
         action: data.businessInsights.recommendations?.[index] || 'Monitor trends and adjust strategy',
         timeframe: index === 0 ? 'Immediate' : index === 1 ? 'This week' : 'Ongoing'
-      })) : fallbackAlerts
+      })) : [] // Return empty array instead of fallback alerts
   })()
 
   const dataSourceInfo = {
@@ -168,6 +168,19 @@ export function AlertCards() {
             </Card>
           ))}
         </div>
+      ) : alerts.length === 0 && isLiveDataMode ? (
+        <div className="flex flex-col items-center justify-center text-center space-y-4 py-12">
+          <div className="text-6xl text-muted-foreground">🤖</div>
+          <div>
+            <h3 className="text-lg font-semibold text-muted-foreground">No Insights Available Yet</h3>
+            <p className="text-sm text-muted-foreground mt-2 max-w-md">
+              AI-powered insights will appear here as users interact with your KitaKits bot and generate business data.
+            </p>
+          </div>
+          <div className="text-xs text-muted-foreground bg-muted px-3 py-2 rounded-lg">
+            ✅ Connected to Live API • Ready for Business Insights
+          </div>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {alerts.map((alert) => (
@@ -229,66 +242,70 @@ export function AlertCards() {
         )}
       </div>
 
-      {/* Summary Stats */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Intelligence Summary</CardTitle>
-          <CardDescription>
-            Key metrics from our AI analysis of MSME data
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold text-red-600">2</div>
-              <div className="text-xs text-muted-foreground">Critical Alerts</div>
+      {/* Summary Stats - Only show when we have real data */}
+      {!isLiveDataMode && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Intelligence Summary</CardTitle>
+            <CardDescription>
+              Key metrics from our AI analysis of MSME data (Mock Data)
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-muted rounded-lg">
+                <div className="text-2xl font-bold text-red-600">2</div>
+                <div className="text-xs text-muted-foreground">Critical Alerts</div>
+              </div>
+              <div className="text-center p-4 bg-muted rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600">1</div>
+                <div className="text-xs text-muted-foreground">Opportunities</div>
+              </div>
+              <div className="text-center p-4 bg-muted rounded-lg">
+                <div className="text-2xl font-bold text-green-600">1</div>
+                <div className="text-xs text-muted-foreground">Market Insights</div>
+              </div>
+              <div className="text-center p-4 bg-muted rounded-lg">
+                <div className="text-2xl font-bold text-blue-600">95%</div>
+                <div className="text-xs text-muted-foreground">Prediction Accuracy</div>
+              </div>
             </div>
-            <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold text-yellow-600">1</div>
-              <div className="text-xs text-muted-foreground">Opportunities</div>
-            </div>
-            <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold text-green-600">1</div>
-              <div className="text-xs text-muted-foreground">Market Insights</div>
-            </div>
-            <div className="text-center p-4 bg-muted rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">95%</div>
-              <div className="text-xs text-muted-foreground">Prediction Accuracy</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Trending Keywords */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center space-x-2">
-            <Flame className="h-4 w-4" />
-            <span>Trending This Week</span>
-          </CardTitle>
-          <CardDescription>
-            Most discussed products and categories among MSMEs
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {[
-              "Instant Noodles", 
-              "Rice Shortage", 
-              "Cooking Oil", 
-              "Premium Coffee", 
-              "Cebu Market", 
-              "Supply Chain",
-              "Price Volatility",
-              "Rural Growth"
-            ].map((keyword, index) => (
-              <Badge key={index} variant="secondary" className="text-xs">
-                {keyword}
-              </Badge>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Trending Keywords - Only show when we have real data */}
+      {!isLiveDataMode && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center space-x-2">
+              <Flame className="h-4 w-4" />
+              <span>Trending This Week (Mock Data)</span>
+            </CardTitle>
+            <CardDescription>
+              Most discussed products and categories among MSMEs
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              {[
+                "Instant Noodles", 
+                "Rice Shortage", 
+                "Cooking Oil", 
+                "Premium Coffee", 
+                "Cebu Market", 
+                "Supply Chain",
+                "Price Volatility",
+                "Rural Growth"
+              ].map((keyword, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {keyword}
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

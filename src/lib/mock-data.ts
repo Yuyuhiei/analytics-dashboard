@@ -4,7 +4,7 @@ export const heroStats = {
   totalMSMEs: 45231,
   dailyTransactions: 156789,
   revenueTracked: 2300000,
-  regionsActive: 12,
+  regionsActive: 17, // Metro Manila has 17 cities/municipality
   trendsLastUpdated: "2 minutes ago",
   growthRate: 23.5
 }
@@ -93,132 +93,141 @@ export const trendingProducts = [
 ]
 
 export const regionData = {
-  "NCR": { 
-    msmes: 8500, 
-    avgTransaction: 1250, 
+  // Metro Manila Cities
+  "Manila": { 
+    msmes: 1850, 
+    avgTransaction: 1450, 
+    status: "high",
+    growth: "+22%",
+    topProduct: "Street Food",
+    alert: "High foot traffic area"
+  },
+  "Quezon City": { 
+    msmes: 2400, 
+    avgTransaction: 980, 
+    status: "high",
+    growth: "+18%",
+    topProduct: "Restaurant Meals",
+    alert: "Commercial district expansion"
+  },
+  "Makati": { 
+    msmes: 1200, 
+    avgTransaction: 2100, 
     status: "high",
     growth: "+15%",
-    topProduct: "Instant Noodles",
-    alert: "High demand for rice"
+    topProduct: "Coffee",
+    alert: null
   },
-  "Region 1": { 
-    msmes: 3200, 
-    avgTransaction: 890, 
+  "Taguig": { 
+    msmes: 950, 
+    avgTransaction: 1800, 
+    status: "high",
+    growth: "+25%",
+    topProduct: "Fast Food",
+    alert: "BGC growth opportunity"
+  },
+  "Pasig": { 
+    msmes: 780, 
+    avgTransaction: 1200, 
+    status: "medium",
+    growth: "+12%",
+    topProduct: "Groceries",
+    alert: null
+  },
+  "Caloocan": { 
+    msmes: 650, 
+    avgTransaction: 720, 
     status: "medium",
     growth: "+8%",
     topProduct: "Rice",
     alert: null
   },
-  "Region 2": { 
-    msmes: 2800, 
-    avgTransaction: 780, 
-    status: "medium",
-    growth: "+12%",
-    topProduct: "Cooking Oil",
-    alert: null
-  },
-  "Region 3": { 
-    msmes: 6200, 
-    avgTransaction: 980, 
-    status: "medium",
-    growth: "+18%",
-    topProduct: "Sugar",
-    alert: "Price gap opportunity"
-  },
-  "Region 4A": { 
-    msmes: 4100, 
-    avgTransaction: 920, 
-    status: "medium",
-    growth: "+10%",
-    topProduct: "Coffee",
-    alert: null
-  },
-  "Region 4B": { 
-    msmes: 2400, 
-    avgTransaction: 680, 
-    status: "low",
-    growth: "+5%",
-    topProduct: "Sardines",
-    alert: null
-  },
-  "Region 5": { 
-    msmes: 3600, 
-    avgTransaction: 820, 
-    status: "medium",
-    growth: "+14%",
-    topProduct: "Rice",
-    alert: null
-  },
-  "Region 6": { 
-    msmes: 4800, 
-    avgTransaction: 950, 
-    status: "medium",
-    growth: "+20%",
-    topProduct: "Sugar",
-    alert: null
-  },
-  "Region 7": { 
-    msmes: 5100, 
-    avgTransaction: 850, 
-    status: "high",
-    growth: "+25%",
-    topProduct: "Instant Noodles",
-    alert: null
-  },
-  "Region 8": { 
-    msmes: 2900, 
-    avgTransaction: 720, 
-    status: "medium",
-    growth: "+9%",
-    topProduct: "Coffee",
-    alert: null
-  },
-  "Region 9": { 
-    msmes: 2100, 
+  "Las Piñas": { 
+    msmes: 420, 
     avgTransaction: 650, 
     status: "low",
-    growth: "+7%",
-    topProduct: "Rice",
+    growth: "+6%",
+    topProduct: "Fish",
     alert: null
   },
-  "Region 10": { 
-    msmes: 3400, 
-    avgTransaction: 880, 
+  "Malabon": { 
+    msmes: 380, 
+    avgTransaction: 580, 
+    status: "low",
+    growth: "+5%",
+    topProduct: "Seafood",
+    alert: null
+  },
+  "Mandaluyong": { 
+    msmes: 520, 
+    avgTransaction: 1100, 
     status: "medium",
-    growth: "+16%",
-    topProduct: "Cooking Oil",
+    growth: "+14%",
+    topProduct: "Shopping Mall Food",
     alert: null
   },
-  "Region 11": { 
-    msmes: 2800, 
-    avgTransaction: 790, 
+  "Marikina": { 
+    msmes: 480, 
+    avgTransaction: 890, 
+    status: "medium",
+    growth: "+10%",
+    topProduct: "Local Delicacies",
+    alert: null
+  },
+  "Muntinlupa": { 
+    msmes: 340, 
+    avgTransaction: 750, 
+    status: "low",
+    growth: "+7%",
+    topProduct: "Convenience Store",
+    alert: null
+  },
+  "Navotas": { 
+    msmes: 290, 
+    avgTransaction: 520, 
+    status: "low",
+    growth: "+4%",
+    topProduct: "Fresh Fish",
+    alert: null
+  },
+  "Parañaque": { 
+    msmes: 580, 
+    avgTransaction: 980, 
     status: "medium",
     growth: "+11%",
-    topProduct: "Sardines",
+    topProduct: "Airport Food",
     alert: null
   },
-  "Region 12": { 
-    msmes: 2200, 
+  "Pasay": { 
+    msmes: 620, 
+    avgTransaction: 1150, 
+    status: "medium",
+    growth: "+13%",
+    topProduct: "Tourist Food",
+    alert: "Tourism recovery"
+  },
+  "Pateros": { 
+    msmes: 85, 
+    avgTransaction: 420, 
+    status: "low",
+    growth: "+3%",
+    topProduct: "Duck Eggs",
+    alert: null
+  },
+  "San Juan": { 
+    msmes: 280, 
+    avgTransaction: 850, 
+    status: "medium",
+    growth: "+9%",
+    topProduct: "Bakery Items",
+    alert: null
+  },
+  "Valenzuela": { 
+    msmes: 450, 
     avgTransaction: 680, 
     status: "low",
     growth: "+6%",
-    topProduct: "Rice",
-    alert: null
-  },
-  "CAR": { 
-    msmes: 1200, 
-    avgTransaction: 920, 
-    status: "medium",
-    growth: "+13%",
-    topProduct: "Coffee",
-    alert: null
-  },
-  "ARMM": { 
-    msmes: 1800, 
-    avgTransaction: 580, 
-    status: "low",
-    growth: "+4%",
-    topProduct: "Rice",
+    topProduct: "Manufacturing Food",
     alert: null
   }
 }

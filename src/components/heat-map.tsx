@@ -100,24 +100,25 @@ export function HeatMap() {
     }
   }
 
-  // Simplified Philippines regions layout
-  const regions = [
-    { name: "CAR", row: 1, col: 2 },
-    { name: "Region 1", row: 1, col: 1 },
-    { name: "Region 2", row: 1, col: 3 },
-    { name: "NCR", row: 2, col: 2 },
-    { name: "Region 3", row: 2, col: 1 },
-    { name: "Region 4A", row: 2, col: 3 },
-    { name: "Region 4B", row: 3, col: 3 },
-    { name: "Region 5", row: 3, col: 4 },
-    { name: "Region 6", row: 4, col: 2 },
-    { name: "Region 7", row: 4, col: 3 },
-    { name: "Region 8", row: 4, col: 4 },
-    { name: "Region 9", row: 5, col: 1 },
-    { name: "Region 10", row: 5, col: 2 },
-    { name: "Region 11", row: 5, col: 3 },
-    { name: "Region 12", row: 5, col: 4 },
-    { name: "ARMM", row: 6, col: 2 }
+  // Metro Manila cities layout (4x4 grid)
+  const cities = [
+    { name: "Manila", row: 1, col: 2 },
+    { name: "Quezon City", row: 1, col: 3 },
+    { name: "Caloocan", row: 1, col: 1 },
+    { name: "Las Piñas", row: 2, col: 1 },
+    { name: "Makati", row: 2, col: 2 },
+    { name: "Malabon", row: 2, col: 3 },
+    { name: "Mandaluyong", row: 2, col: 4 },
+    { name: "Marikina", row: 3, col: 1 },
+    { name: "Muntinlupa", row: 3, col: 2 },
+    { name: "Navotas", row: 3, col: 3 },
+    { name: "Parañaque", row: 3, col: 4 },
+    { name: "Pasay", row: 4, col: 1 },
+    { name: "Pasig", row: 4, col: 2 },
+    { name: "Pateros", row: 4, col: 3 },
+    { name: "San Juan", row: 4, col: 4 },
+    { name: "Taguig", row: 1, col: 4 },
+    { name: "Valenzuela", row: 5, col: 2 }
   ]
 
   return (
@@ -130,7 +131,7 @@ export function HeatMap() {
           </Badge>
         </CardTitle>
         <CardDescription>
-          Regional distribution of MSMEs across the Philippines
+          Distribution of MSMEs across Metro Manila cities
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -150,8 +151,8 @@ export function HeatMap() {
           </div>
         </div>
 
-        {/* Simplified Philippines Map Grid */}
-        <div className="relative mx-auto max-w-md">
+        {/* Metro Manila Cities Grid */}
+        <div className="relative mx-auto max-w-lg">
           {isLoading ? (
             <div className="h-96 flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -163,7 +164,7 @@ export function HeatMap() {
                 <div>
                   <h3 className="text-lg font-semibold text-muted-foreground">No Geographic Data Yet</h3>
                   <p className="text-sm text-muted-foreground mt-2 max-w-md">
-                    Regional MSME distribution will appear here as users interact with your KitaKits bot from different locations across the Philippines.
+                    MSME distribution across Metro Manila cities will appear here as users interact with your KitaKits bot from different locations.
                   </p>
                 </div>
                 <div className="text-xs text-muted-foreground bg-muted px-3 py-2 rounded-lg">
@@ -172,33 +173,33 @@ export function HeatMap() {
               </div>
             ) : (
           <div className="grid grid-cols-4 gap-1 h-96">
-            {Array.from({ length: 24 }, (_, index) => {
+            {Array.from({ length: 20 }, (_, index) => {
               const row = Math.floor(index / 4) + 1
               const col = (index % 4) + 1
-              const region = regions.find(r => r.row === row && r.col === col)
+              const city = cities.find(c => c.row === row && c.col === col)
               
-              if (!region) {
+              if (!city) {
                 return <div key={index} className="rounded"></div>
               }
 
-              const regionInfo = currentRegionData[region.name as keyof typeof currentRegionData] || regionData[region.name as keyof typeof regionData]
+              const cityInfo = currentRegionData[city.name as keyof typeof currentRegionData] || regionData[city.name as keyof typeof regionData]
               
               return (
-                <Dialog key={region.name}>
+                <Dialog key={city.name}>
                   <DialogTrigger asChild>
                     <button
                       className={`
                         rounded-lg p-2 transition-all duration-200 cursor-pointer
-                        ${getRegionColor(regionInfo.status)}
+                        ${getRegionColor(cityInfo?.status || 'low')}
                         text-white text-xs font-medium
                         transform hover:scale-105 shadow-md hover:shadow-lg
                       `}
-                      onClick={() => setSelectedRegion(region.name)}
+                      onClick={() => setSelectedRegion(city.name)}
                     >
                       <div className="flex flex-col items-center justify-center h-full">
                         <MapPin className="h-3 w-3 mb-1" />
-                        <div className="text-[10px] leading-tight text-center">
-                          {region.name}
+                        <div className="text-[8px] leading-tight text-center">
+                          {city.name}
                         </div>
                       </div>
                     </button>
@@ -207,10 +208,10 @@ export function HeatMap() {
                     <DialogHeader>
                       <DialogTitle className="flex items-center space-x-2">
                         <MapPin className="h-5 w-5" />
-                        <span>{region.name}</span>
+                        <span>{city.name}</span>
                       </DialogTitle>
                       <DialogDescription>
-                        Detailed insights for {region.name}
+                        Detailed insights for {city.name}
                       </DialogDescription>
                     </DialogHeader>
                     
@@ -218,11 +219,11 @@ export function HeatMap() {
                       {/* Key Metrics */}
                       <div className="grid grid-cols-2 gap-4">
                         <div className="text-center p-3 bg-muted rounded-lg">
-                          <div className="text-2xl font-bold">{regionInfo.msmes.toLocaleString()}</div>
+                          <div className="text-2xl font-bold">{cityInfo?.msmes?.toLocaleString() || 0}</div>
                           <div className="text-xs text-muted-foreground">Total MSMEs</div>
                         </div>
                         <div className="text-center p-3 bg-muted rounded-lg">
-                          <div className="text-2xl font-bold">₱{regionInfo.avgTransaction}</div>
+                          <div className="text-2xl font-bold">₱{cityInfo?.avgTransaction || 0}</div>
                           <div className="text-xs text-muted-foreground">Avg Transaction</div>
                         </div>
                       </div>
@@ -231,8 +232,8 @@ export function HeatMap() {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium">Status:</span>
-                          <Badge variant="outline" className={getStatusColor(regionInfo.status)}>
-                            {getStatusLabel(regionInfo.status)}
+                          <Badge variant="outline" className={getStatusColor(cityInfo?.status || 'low')}>
+                            {getStatusLabel(cityInfo?.status || 'low')}
                           </Badge>
                         </div>
                         
@@ -240,23 +241,23 @@ export function HeatMap() {
                           <span className="text-sm font-medium">Growth:</span>
                           <div className="flex items-center space-x-1">
                             <TrendingUp className="h-3 w-3 text-green-600" />
-                            <span className="text-green-600 font-medium">{regionInfo.growth}</span>
+                            <span className="text-green-600 font-medium">{cityInfo?.growth || '+0%'}</span>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-medium">Top Product:</span>
-                          <span className="font-medium">{regionInfo.topProduct}</span>
+                          <span className="font-medium">{cityInfo?.topProduct || 'No data'}</span>
                         </div>
                       </div>
 
                       {/* Alert if any */}
-                      {regionInfo.alert && (
+                      {cityInfo?.alert && (
                         <div className="flex items-start space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                           <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
                           <div>
                             <div className="text-sm font-medium text-yellow-800">Alert</div>
-                            <div className="text-xs text-yellow-700">{regionInfo.alert}</div>
+                            <div className="text-xs text-yellow-700">{cityInfo.alert}</div>
                           </div>
                         </div>
                       )}
@@ -270,21 +271,23 @@ export function HeatMap() {
           )}
         </div>
 
-        {/* Summary Stats */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-          <div className="text-center p-3 bg-muted rounded-lg">
-            <div className="font-semibold text-red-600">🏙️ Metro Areas</div>
-            <div className="text-xs text-muted-foreground">NCR, Region 7 (High Density)</div>
+        {/* Summary Stats - Only show for mock data */}
+        {!isLiveDataMode && (
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="font-semibold text-red-600">🏙️ Business Districts</div>
+              <div className="text-xs text-muted-foreground">Makati, BGC (High Density)</div>
+            </div>
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="font-semibold text-yellow-600">🏘️ Residential Growth</div>
+              <div className="text-xs text-muted-foreground">Average +8% growth</div>
+            </div>
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="font-semibold text-green-600">🎯 Opportunity</div>
+              <div className="text-xs text-muted-foreground">Eastern Metro Manila</div>
+            </div>
           </div>
-          <div className="text-center p-3 bg-muted rounded-lg">
-            <div className="font-semibold text-yellow-600">🌾 Rural Growth</div>
-            <div className="text-xs text-muted-foreground">Average +12% growth</div>
-          </div>
-          <div className="text-center p-3 bg-muted rounded-lg">
-            <div className="font-semibold text-green-600">🎯 Opportunity</div>
-            <div className="text-xs text-muted-foreground">Mindanao expansion</div>
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   )

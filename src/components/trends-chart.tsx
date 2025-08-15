@@ -59,23 +59,10 @@ export function TrendsChart() {
       return []
     }
     
-    // Live mode with real data - transform API data to chart format
-    // Since the database is reset, this will be empty initially
-    const businessItems = data.businessInsights?.keyFindings || []
-    if (businessItems.length === 0) {
-      return [] // Empty state for reset database
-    }
-    
-    // Transform real data when available
-    return businessItems.slice(0, 10).map((finding, index) => ({
-      name: `Item ${index + 1}`,
-      fullName: finding,
-      sales: 0, // No sales data yet
-      change: 0,
-      price: 0,
-      category: "Unknown",
-      stock: "No Data"
-    }))
+    // Live mode with real data - check for actual product/inventory data
+    // For now, always return empty since we're focused on real product data, not business insights
+    // TODO: When real product/inventory endpoints are available, transform that data here
+    return [] // Empty state until real product data is available
   })()
   
   // Transform API data to daily trend chart data if available
@@ -303,21 +290,23 @@ export function TrendsChart() {
               </div>
             </div>
 
-            {/* Quick Insights */}
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <div className="font-semibold text-green-600">🔥 Hottest</div>
-                <div className="text-xs text-muted-foreground">Instant Noodles (+45%)</div>
+            {/* Quick Insights - Only show for mock data */}
+            {!isLiveDataMode && (
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="font-semibold text-green-600">🔥 Hottest</div>
+                  <div className="text-xs text-muted-foreground">Instant Noodles (+45%)</div>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="font-semibold text-blue-600">📈 Growing</div>
+                  <div className="text-xs text-muted-foreground">8 out of 10 products</div>
+                </div>
+                <div className="text-center p-3 bg-muted rounded-lg">
+                  <div className="font-semibold text-orange-600">⚠️ Watch</div>
+                  <div className="text-xs text-muted-foreground">Cooking Oil (-5%)</div>
+                </div>
               </div>
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <div className="font-semibold text-blue-600">📈 Growing</div>
-                <div className="text-xs text-muted-foreground">8 out of 10 products</div>
-              </div>
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <div className="font-semibold text-orange-600">⚠️ Watch</div>
-                <div className="text-xs text-muted-foreground">Cooking Oil (-5%)</div>
-              </div>
-            </div>
+            )}
           </>
         )}
         

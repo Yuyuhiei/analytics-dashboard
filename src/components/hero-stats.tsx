@@ -64,7 +64,7 @@ export function HeroStats() {
       totalMSMEs: data.overview.totalUsers ?? 0,
       dailyTransactions: data.trends?.daily?.[data.trends.daily.length - 1]?.interactions ?? 0,
       revenueTracked: 0, // Not in live API yet
-      regionsActive: 12, // Static for now
+      regionsActive: 17, // Metro Manila cities (static for now)
       trendsLastUpdated: "Live API",
       growthRate: parseFloat(data.trends?.weekly?.percentageChange?.interactions?.replace(/[+%]/g, '') || '0') || 0
     }
@@ -171,21 +171,30 @@ export function HeroStats() {
         <CardContent>
           <div className="text-2xl font-bold">{formatCurrency(stats.revenueTracked)}</div>
           <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-            <span className="text-green-600">↗ +18% this week</span>
+            <Badge 
+              variant={dataSourceInfo.isLive ? "default" : dataSourceInfo.isError ? "destructive" : "secondary"} 
+              className="text-xs"
+            >
+              {dataSourceInfo.label}
+            </Badge>
           </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Geographic Coverage</CardTitle>
+          <CardTitle className="text-sm font-medium">Metro Manila Coverage</CardTitle>
           <MapPin className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.regionsActive} Regions</div>
+          <div className="text-2xl font-bold">{stats.regionsActive} Cities</div>
           <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" />
-            <span>Nationwide coverage</span>
+            <Badge 
+              variant={dataSourceInfo.isLive ? "default" : dataSourceInfo.isError ? "destructive" : "secondary"} 
+              className="text-xs"
+            >
+              {dataSourceInfo.label}
+            </Badge>
           </div>
         </CardContent>
       </Card>
