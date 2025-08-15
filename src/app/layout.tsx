@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "KitaKits Analytics - MSME Intelligence Dashboard",
   description: "Real-time insights from 45,000+ MSMEs across the Philippines. Market intelligence for corporations and stakeholders.",
+  icons: {
+    icon: "/kitakita-svg.svg",
+    shortcut: "/kitakita-svg.svg",
+    apple: "/kitakita-svg.svg",
+  },
 };
 
 export default function RootLayout({
