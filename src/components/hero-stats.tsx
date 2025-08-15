@@ -63,7 +63,9 @@ export function HeroStats() {
     return {
       totalMSMEs: data.overview.totalUsers ?? 0,
       dailyTransactions: data.trends?.daily?.[data.trends.daily.length - 1]?.interactions ?? 0,
-      revenueTracked: 0, // Not in live API yet
+      revenueTracked: data.salesSummary?.totalRevenue ?? 
+                     data.urbanPlanningData?.economicActivity?.overallMetrics?.totalRevenue ?? 
+                     data.urbanPlanningData?.economicActivity?.overallMetrics?.totalEconomicValue ?? 0,
       regionsActive: 17, // Metro Manila cities (static for now)
       trendsLastUpdated: "Live API",
       growthRate: parseFloat(data.trends?.weekly?.percentageChange?.interactions?.replace(/[+%]/g, '') || '0') || 0

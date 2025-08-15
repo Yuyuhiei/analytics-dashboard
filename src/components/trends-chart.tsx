@@ -59,10 +59,21 @@ export function TrendsChart() {
       return []
     }
     
-    // Live mode with real data - check for actual product/inventory data
-    // For now, always return empty since we're focused on real product data, not business insights
-    // TODO: When real product/inventory endpoints are available, transform that data here
-    return [] // Empty state until real product data is available
+    // Live mode with real data - use trendingProducts from the API response
+    if (data?.trendingProducts && Array.isArray(data.trendingProducts) && data.trendingProducts.length > 0) {
+      return data.trendingProducts.map(product => ({
+        name: product.name,
+        fullName: product.fullName || product.name,
+        sales: product.sales || 0,
+        change: product.change || 0,
+        price: parseFloat(product.price) || 0,
+        category: product.category || 'Unknown',
+        stock: product.stock || 0
+      }))
+    }
+    
+    // No trending products data available yet
+    return []
   })()
   
   // Transform API data to daily trend chart data if available

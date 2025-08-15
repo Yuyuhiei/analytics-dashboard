@@ -67,6 +67,49 @@ interface AnalyticsResponse {
   ocrAnalytics?: any;
   categories?: any;
   demographics?: any;
+  trendingProducts?: Array<{
+    name: string;
+    fullName?: string;
+    sales: number;
+    change: number;
+    price: string | number;
+    category: string;
+    stock: number;
+    rank?: number;
+    salesDetails?: {
+      quantity: number;
+      revenue: string;
+      transactions: number;
+      avgPrice: string;
+    };
+  }>;
+  salesSummary?: {
+    totalRevenue: number;
+    totalTransactions: number;
+    avgTransactionValue: number;
+    uniqueProducts: number;
+    uniqueSellers: number;
+    performance?: {
+      revenueFormatted: string;
+      status: string;
+      lastUpdated: string;
+    };
+  };
+  urbanPlanningData?: {
+    economicActivity?: {
+      overallMetrics?: {
+        totalRevenue?: number;
+        totalEconomicValue?: number;
+        totalTransactions?: number;
+        avgTransactionValue?: number;
+        uniqueProducts?: number;
+        [key: string]: any;
+      };
+      [key: string]: any;
+    };
+    [key: string]: any;
+  };
+  enhancedBusinessInsights?: any;
 }
 
 class KitaKitsAPIClient {
