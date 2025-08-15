@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { ConnectionStatus } from "@/components/connection-status";
 import { DataSourceToggle } from "@/components/data-source-toggle";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export default function Dashboard() {
   return (
@@ -14,11 +15,27 @@ export default function Dashboard() {
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">KitaKits Analytics</h1>
-              <p className="text-muted-foreground">
-                Real-time insights from MSMEs across the Philippines
-              </p>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-3">
+                <div className="relative">
+                  <Image
+                    src="/kitakita-svg.svg"
+                    alt="KitaKita Logo"
+                    width={64}
+                    height={64}
+                    className="h-16 w-auto dark:brightness-0 dark:invert"
+                    priority
+                  />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#3F9160' }}>
+                    Analytics Dashboard
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    Real-time insights from MSMEs across the Metro Manila
+                  </p>
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <ConnectionStatus />
