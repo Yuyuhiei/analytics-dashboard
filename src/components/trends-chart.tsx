@@ -202,7 +202,12 @@ export function TrendsChart() {
                   />
                   <YAxis 
                     tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+                    tickFormatter={(value) => {
+                      if (value === 0) return '0'
+                      if (value < 1000) return value.toString()
+                      if (value < 1000000) return `${(value / 1000).toFixed(1)}K`
+                      return `${(value / 1000000).toFixed(1)}M`
+                    }}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar 
@@ -251,7 +256,12 @@ export function TrendsChart() {
                   />
                   <YAxis 
                     tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => `${(value / 1000).toFixed(1)}K`}
+                    tickFormatter={(value) => {
+                      if (value === 0) return '0'
+                      if (value < 1000) return value.toString()
+                      if (value < 1000000) return `${(value / 1000).toFixed(1)}K`
+                      return `${(value / 1000000).toFixed(1)}M`
+                    }}
                   />
                   <Tooltip />
                   <Line 
