@@ -72,6 +72,7 @@ interface AnalyticsResponse {
 class KitaKitsAPIClient {
   private config: KitaKitsConfig;
   private possibleEndpoints = [
+    'https://kitakitachatbot.onrender.com',      // ✅ CORRECT ENDPOINT
     'https://kitakits-chatbot.onrender.com',
     'https://kitakitschatbot.onrender.com',
     'https://kitakits.onrender.com',
@@ -135,16 +136,48 @@ class KitaKitsAPIClient {
         if (response.ok) {
           const data = await response.json();
           console.log('📊 Retrieved live data from:', liveEndpoint);
+          console.log('📊 Response structure:', {
+            hasSuccess: 'success' in data,
+            hasMetadata: 'metadata' in data,
+            hasOverview: 'overview' in data,
+            topLevelKeys: Object.keys(data).slice(0, 10)
+          });
           
-          // Mark as live data
-          return {
-            ...data,
-            metadata: {
-              ...data.metadata,
-              isLive: true,
-              dataSource: 'KitaKits Live Endpoint'
-            }
-          };
+          // Handle different response formats
+          let processedData;
+          
+          if (data.success !== undefined) {
+            // New wrapped format
+            processedData = {
+              ...data,
+              metadata: {
+                ...data.metadata,
+                isLive: true,
+                dataSource: 'KitaKits Live Endpoint'
+              }
+            };
+          } else if (data.metadata && data.overview) {
+            // Direct analytics format (current)
+            processedData = {
+              metadata: {
+                ...data.metadata,
+                isLive: true,
+                dataSource: 'KitaKits Live Endpoint'
+              },
+              overview: data.overview,
+              userEngagement: data.userEngagement,
+              businessInsights: data.businessInsights,
+              trends: data.trends,
+              ocrAnalytics: data.ocrAnalytics,
+              categories: data.categories,
+              demographics: data.demographics
+            };
+          } else {
+            console.warn('⚠️ Unexpected response format from live endpoint');
+            throw new Error('Unexpected response format');
+          }
+          
+          return processedData;
         }
       } catch (error) {
         console.warn('⚠️ Live endpoint failed, falling back to mock data:', error);

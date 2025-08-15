@@ -4,6 +4,7 @@ import { HeatMap } from "@/components/heat-map";
 import { AlertCards } from "@/components/alert-cards";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ConnectionStatus } from "@/components/connection-status";
+import { DataSourceToggle } from "@/components/data-source-toggle";
 import { Badge } from "@/components/ui/badge";
 
 export default function Dashboard() {
@@ -32,6 +33,11 @@ export default function Dashboard() {
 
       {/* Main Dashboard */}
       <main className="container mx-auto px-4 py-8 space-y-8">
+        {/* Data Source Toggle */}
+        <section className="flex justify-center">
+          <DataSourceToggle />
+        </section>
+
         {/* Hero Stats */}
         <section>
           <HeroStats />

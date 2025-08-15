@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -11,11 +12,81 @@ import {
   Lightbulb,
   Clock,
   ArrowRight,
-  Zap
+  Zap,
+  Loader2
 } from "lucide-react"
-import { alertInsights } from "@/lib/mock-data"
+import { kitaKitsAPI, type AnalyticsResponse } from "@/lib/api-client"
+import { alertInsights as fallbackAlerts } from "@/lib/mock-data"
+import { useDataSource } from "@/components/data-source-toggle"
 
 export function AlertCards() {
+  const [data, setData] = useState<AnalyticsResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [apiError, setApiError] = useState(false)
+  const isLiveDataMode = useDataSource()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isLiveDataMode) {
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        setIsLoading(true)
+        setApiError(false)
+        const analyticsData = await kitaKitsAPI.getAnalytics()
+        setData(analyticsData)
+      } catch (error) {
+        console.error('Failed to fetch analytics data:', error)
+        setApiError(true)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [isLiveDataMode])
+
+  // Determine what data to show based on toggle state
+  const alerts = (() => {
+    if (!isLiveDataMode) {
+      // User selected mock data
+      return fallbackAlerts
+    }
+
+    if (apiError || !data) {
+      // Live mode but API failed
+      return [{
+        id: 1,
+        type: 'warning',
+        title: 'API Connection Error',
+        description: 'Unable to fetch live insights from the analytics API.',
+        impact: 'High',
+        action: 'Check your internet connection and try again.',
+        timeframe: 'Immediate'
+      }]
+    }
+
+    // Live mode with successful API response
+    return data.businessInsights?.keyFindings ? 
+      data.businessInsights.keyFindings.slice(0, 4).map((finding, index) => ({
+        id: index + 1,
+        type: index === 0 ? 'warning' : index === 1 ? 'opportunity' : index === 2 ? 'trending' : 'insight',
+        title: index === 0 ? 'Stock Alert' : index === 1 ? 'Price Opportunity' : index === 2 ? 'Trending Product' : 'Market Insight',
+        description: finding,
+        impact: index < 2 ? 'High' : 'Medium',
+        action: data.businessInsights.recommendations?.[index] || 'Monitor trends and adjust strategy',
+        timeframe: index === 0 ? 'Immediate' : index === 1 ? 'This week' : 'Ongoing'
+      })) : fallbackAlerts
+  })()
+
+  const dataSourceInfo = {
+    isLive: isLiveDataMode && !apiError && data !== null,
+    isError: isLiveDataMode && apiError,
+    isMock: !isLiveDataMode,
+    label: !isLiveDataMode ? "Mock Insights" : apiError ? "Error" : "Live Insights"
+  }
   const getAlertIcon = (type: string) => {
     switch (type) {
       case "warning":
@@ -79,8 +150,27 @@ export function AlertCards() {
       </div>
 
       {/* Alert Grid */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {alertInsights.map((alert) => (
+      {isLoading ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          {[1, 2, 3, 4].map((i) => (
+            <Card key={i} className="relative overflow-hidden">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-base">
+                  <div className="flex items-center space-x-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Loading...</span>
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="h-16 bg-muted animate-pulse rounded"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {alerts.map((alert) => (
           <Card key={alert.id} className="relative overflow-hidden">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center justify-between text-base">
@@ -121,7 +211,22 @@ export function AlertCards() {
               </Button>
             </CardContent>
           </Card>
-        ))}
+          ))}
+        </div>
+      )}
+      
+      <div className="flex items-center justify-between mt-4">
+        <Badge 
+          variant={dataSourceInfo.isLive ? "default" : dataSourceInfo.isError ? "destructive" : "secondary"} 
+          className="text-xs"
+        >
+          {dataSourceInfo.label}
+        </Badge>
+        {data && (
+          <span className="text-xs text-muted-foreground">
+            Updated: {new Date(data.metadata.generatedAt).toLocaleTimeString()}
+          </span>
+        )}
       </div>
 
       {/* Summary Stats */}

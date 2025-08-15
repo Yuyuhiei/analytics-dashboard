@@ -1,14 +1,46 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import { TrendingUp, TrendingDown } from "lucide-react"
-import { trendingProducts } from "@/lib/mock-data"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, LineChart, Line } from 'recharts'
+import { TrendingUp, TrendingDown, Loader2 } from "lucide-react"
+import { kitaKitsAPI, type AnalyticsResponse } from "@/lib/api-client"
+import { trendingProducts as fallbackProducts } from "@/lib/mock-data"
+import { useDataSource } from "@/components/data-source-toggle"
 
 export function TrendsChart() {
+  const [data, setData] = useState<AnalyticsResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [apiError, setApiError] = useState(false)
+  const [viewMode, setViewMode] = useState<'products' | 'trends'>('products')
+  const isLiveDataMode = useDataSource()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isLiveDataMode) {
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        setIsLoading(true)
+        setApiError(false)
+        const analyticsData = await kitaKitsAPI.getAnalytics()
+        setData(analyticsData)
+      } catch (error) {
+        console.error('Failed to fetch analytics data:', error)
+        setApiError(true)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [isLiveDataMode])
+
   // Transform data for the chart
-  const chartData = trendingProducts.map(product => ({
+  const chartData = fallbackProducts.map(product => ({
     name: product.name.length > 15 ? product.name.substring(0, 15) + '...' : product.name,
     fullName: product.name,
     sales: product.sales,
@@ -17,6 +49,9 @@ export function TrendsChart() {
     category: product.category,
     stock: product.stock
   }))
+  
+  // Transform API data to daily trend chart data if available
+  const dailyTrendData = data?.trends?.daily || []
 
   // Custom tooltip component
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -59,90 +94,197 @@ export function TrendsChart() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          Top Trending Products
-          <Badge variant="secondary" className="text-xs">
-            Live Data
+          {isLoading ? (
+            <span>Loading Analytics...</span>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <span>{viewMode === 'products' ? 'Top Trending Products' : 'Daily Trends'}</span>
+              <div className="flex space-x-1">
+                <Badge 
+                  variant={viewMode === 'products' ? "default" : "outline"} 
+                  className="text-xs cursor-pointer" 
+                  onClick={() => setViewMode('products')}
+                >
+                  Products
+                </Badge>
+                <Badge 
+                  variant={viewMode === 'trends' ? "default" : "outline"} 
+                  className="text-xs cursor-pointer" 
+                  onClick={() => setViewMode('trends')}
+                >
+                  Daily Trends
+                </Badge>
+              </div>
+            </div>
+          )}
+          <Badge 
+            variant={isLiveDataMode && !apiError && data !== null ? "default" : apiError ? "destructive" : "secondary"} 
+            className="text-xs"
+          >
+            {!isLiveDataMode ? "Mock Data" : apiError ? "API Error" : "Live API"}
           </Badge>
         </CardTitle>
         <CardDescription>
-          Weekly sales performance across all MSMEs - Updated 2 minutes ago
+          {isLoading ? (
+            <span className="flex items-center"><Loader2 className="h-3 w-3 animate-spin mr-2" /> Fetching analytics data...</span>
+          ) : (
+            viewMode === 'products' ? 
+              "Weekly sales performance across all MSMEs" : 
+              "Daily interactions from the KitaKits platform"
+          )}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{
-                top: 5,
-                right: 30,
-                left: 20,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-              <XAxis 
-                dataKey="name" 
-                tick={{ fontSize: 12 }}
-                angle={-45}
-                textAnchor="end"
-                height={80}
-              />
-              <YAxis 
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar 
-                dataKey="sales" 
-                radius={[4, 4, 0, 0]}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={getBarColor(entry.change)} 
+        {isLoading ? (
+          <div className="h-80 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <div className="h-80">
+            {viewMode === 'products' ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 12 }}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
                   />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar 
+                    dataKey="sales" 
+                    radius={[4, 4, 0, 0]}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={getBarColor(entry.change)} 
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={dailyTrendData}
+                  margin={{
+                    top: 5,
+                    right: 30,
+                    left: 20,
+                    bottom: 5,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => `${(value / 1000).toFixed(1)}K`}
+                  />
+                  <Tooltip />
+                  <Line 
+                    type="monotone" 
+                    dataKey="interactions" 
+                    name="Interactions"
+                    stroke="hsl(var(--chart-1))" 
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="newUsers" 
+                    name="New Users"
+                    stroke="hsl(var(--chart-2))" 
+                    strokeWidth={2}
+                    dot={{ r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        )}
         
-        {/* Legend */}
-        <div className="mt-4 flex flex-wrap gap-4 justify-center text-xs">
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(142, 76%, 36%)" }}></div>
-            <span>+30%+ Growth</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(173, 58%, 39%)" }}></div>
-            <span>+10% to +30%</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(197, 37%, 24%)" }}></div>
-            <span>0% to +10%</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(0, 84%, 60%)" }}></div>
-            <span>Declining</span>
-          </div>
-        </div>
+        {!isLoading && viewMode === 'products' && (
+          <>
+            {/* Legend */}
+            <div className="mt-4 flex flex-wrap gap-4 justify-center text-xs">
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(142, 76%, 36%)" }}></div>
+                <span>+30%+ Growth</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(173, 58%, 39%)" }}></div>
+                <span>+10% to +30%</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(197, 37%, 24%)" }}></div>
+                <span>0% to +10%</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: "hsl(0, 84%, 60%)" }}></div>
+                <span>Declining</span>
+              </div>
+            </div>
 
-        {/* Quick Insights */}
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-          <div className="text-center p-3 bg-muted rounded-lg">
-            <div className="font-semibold text-green-600">🔥 Hottest</div>
-            <div className="text-xs text-muted-foreground">Instant Noodles (+45%)</div>
+            {/* Quick Insights */}
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+              <div className="text-center p-3 bg-muted rounded-lg">
+                <div className="font-semibold text-green-600">🔥 Hottest</div>
+                <div className="text-xs text-muted-foreground">Instant Noodles (+45%)</div>
+              </div>
+              <div className="text-center p-3 bg-muted rounded-lg">
+                <div className="font-semibold text-blue-600">📈 Growing</div>
+                <div className="text-xs text-muted-foreground">8 out of 10 products</div>
+              </div>
+              <div className="text-center p-3 bg-muted rounded-lg">
+                <div className="font-semibold text-orange-600">⚠️ Watch</div>
+                <div className="text-xs text-muted-foreground">Cooking Oil (-5%)</div>
+              </div>
+            </div>
+          </>
+        )}
+        
+        {!isLoading && viewMode === 'trends' && data?.trends?.weekly && (
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="font-semibold text-blue-600">Interactions</div>
+              <div className="text-xs text-muted-foreground">
+                {data.trends.weekly.percentageChange.interactions} from last week
+              </div>
+            </div>
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="font-semibold text-green-600">New Users</div>
+              <div className="text-xs text-muted-foreground">
+                {data.trends.weekly.percentageChange.newUsers} from last week
+              </div>
+            </div>
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="font-semibold text-purple-600">OCR Processed</div>
+              <div className="text-xs text-muted-foreground">
+                {data.trends.weekly.percentageChange.ocrProcessed} from last week
+              </div>
+            </div>
           </div>
-          <div className="text-center p-3 bg-muted rounded-lg">
-            <div className="font-semibold text-blue-600">📈 Growing</div>
-            <div className="text-xs text-muted-foreground">8 out of 10 products</div>
-          </div>
-          <div className="text-center p-3 bg-muted rounded-lg">
-            <div className="font-semibold text-orange-600">⚠️ Watch</div>
-            <div className="text-xs text-muted-foreground">Cooking Oil (-5%)</div>
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   )
